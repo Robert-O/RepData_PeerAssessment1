@@ -6,7 +6,8 @@ Read the data file:
 
 ```r
 setwd("~/Rworkspace/Reproducible_Research/Peer_Assignment_1/RepData_PeerAssessment1")
-activityDataRaw <- read.csv(file = 'activity.csv')
+unzip(zipfile = 'activity.zip', overwrite = TRUE, exdir = 'tempUnzip')
+activityDataRaw <- read.csv(file = '~/Rworkspace/Reproducible_Research/Peer_Assignment_1/RepData_PeerAssessment1/tempUnzip/activity.csv')
 ## strip the NA values
 activityData <- na.omit(activityDataRaw)
 ```
@@ -37,7 +38,6 @@ meanTotalStepsPerDay
 ## [1] 10766.19
 ```
 
-
 The median # of total steps per day:
 
 ```r
@@ -50,15 +50,13 @@ medianTotalStepsPerDay
 ```
 
 
-
-
 ## What is the average daily activity pattern?
 Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
 ```r
 ## calculate average steps per interval
 meanStepsPerInterval <- dcast(data = activityData, formula = interval ~
-                        "meanSteps", fun.aggregate = sum, value.var="steps")
+                        "meanSteps", fun.aggregate = mean, value.var="steps")
 plot(x = meanStepsPerInterval$interval, y = meanStepsPerInterval$meanSteps, 
      type = 'l', xlab = 'Interval', ylab = 'average # of steps', main =
            'Average # of Steps Per Interval')
@@ -108,7 +106,7 @@ adjustedData <- activityDataRaw
 ## update NA values with meanStepsPerInterval
 for (i in seq_len(nrow(adjustedData))){
       if (is.na(adjustedData[i, 'steps'])){
-            adjustedData[i, 'steps'] <- meanStepsPerInterval[meanStepsPerInterval$interval == adjustedData[i, 'interval'],2]
+            adjustedData[i, 'steps'] <- meanStepsPerInterval[meanStepsPerInterval$interval == adjustedData[i, 'interval'], 'meanSteps']
       }
       
 }
@@ -121,35 +119,36 @@ Do these values differ from the estimates from the first part of the assignment?
 ```r
 library(reshape2)
 ## calculate total steps per day
-totalAdjStepsPerDay <- dcast(data = adjustedData, formula = date ~ ., 
+totalAdjStepsPerDay <- dcast(data = adjustedData, formula = date ~ "stepsSum", 
                           fun.aggregate = sum, value.var="steps")
-hist(totalAdjStepsPerDay[,2], xlab = "Total Steps per Day", 
+hist(totalAdjStepsPerDay$stepsSum, xlab = "Total Steps per Day", 
      main = "Frequecy of Total Adjusted Steps per Day")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
 
+
 The mean # of total adjusted steps per day:
 
 ```r
-meanTotalAdjStepsPerDay <- mean(totalAdjStepsPerDay[,2], na.rm = TRUE)
+meanTotalAdjStepsPerDay <- mean(totalAdjStepsPerDay$stepsSum, na.rm = TRUE)
 meanTotalAdjStepsPerDay
 ```
 
 ```
-## [1] 84188.07
+## [1] 10766.19
 ```
 
 
 The median # of total adjusted steps per day:
 
 ```r
-medianTotalAdjStepsPerDay <- median(totalAdjStepsPerDay[,2], na.rm = TRUE)
+medianTotalAdjStepsPerDay <- median(totalAdjStepsPerDay$stepsSum, na.rm = TRUE)
 medianTotalAdjStepsPerDay
 ```
 
 ```
-## [1] 11458
+## [1] 10766.19
 ```
 
 
